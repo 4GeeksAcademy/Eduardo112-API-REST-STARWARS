@@ -87,7 +87,7 @@ class Planet(db.Model):
 
 
 """
-Orden:
+Orden para correrlo en la terminal:
 pipenv install
 pipenv  shell
 pipenv run migrate
