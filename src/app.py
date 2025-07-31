@@ -8,7 +8,9 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Character, Planet, FavoritesList
+from datetime import datetime
+
 #from models import Person
 
 app = Flask(__name__)
@@ -42,8 +44,40 @@ def handle_hello():
     response_body = {
         "msg": "Hello, this is your GET /user response "
     }
-
     return jsonify(response_body), 200
+
+
+# END POINT USERS
+@app.route('/users', methods=['GET'])
+def get_all_users():
+    users = User.query.all()            #query = consulta
+    return jsonify([user.serialize() for user in users]), 200
+
+
+# END POINT CHARACTER
+@app.route('/people', methods=['POST'])
+def create_character():
+    data = request.get_json()
+    new_character =  Character(
+        name = data.get("name"),
+        species = data.get("species"),
+        gender = data.get("gender"),
+    )
+    db.session.add(new_character)  # asi se prepara para agregarlo en la tabla (como un git add)
+    db.session.commit()    # así se guarda en la tabla
+
+    return jsonify(new_character.serialize()), 201
+
+# END POINT GET ALL CHARACTER
+@app.route('/characters', methods=['GET'])
+def get_all_characters():
+    characters = Character.query.all()            #query = consulta
+    return jsonify([character.serialize() for character in characters]), 200
+
+
+
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
