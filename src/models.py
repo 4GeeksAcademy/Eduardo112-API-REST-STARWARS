@@ -39,12 +39,30 @@ class FavoritesList(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     user_id: Mapped[int] = mapped_column(db.ForeignKey("user.id"), nullable=False)    #db.ForeignKey Crea una clave foránea, que conecta esta tabla con otra, entre parentesis indica la columna a la que hace referencia
-    character_id: Mapped[int] = mapped_column(db.ForeignKey("character.id"), nullable=False)
-    planet_id: Mapped[int] = mapped_column(db.ForeignKey("planet.id"), nullable=False)   #IMPORTANTE dentro de la ForeignKey se pone ".  no _"
+    character_id: Mapped[int] = mapped_column(db.ForeignKey("character.id"), nullable=True)
+    planet_id: Mapped[int] = mapped_column(db.ForeignKey("planet.id"), nullable=True)   #IMPORTANTE dentro de la ForeignKey se pone ".  no _"
    
     user: Mapped["User"] = relationship("User", back_populates="favorites")                  #relationship Establece una relación entre modelos (tablas).
     character: Mapped["Character"] = relationship("Character", back_populates="favorites")  #back_populates= Define la relación inversa, conecta ambos lados de la relación
     planet: Mapped["Planet"] = relationship("Planet", back_populates="favorites")
+
+    def serialize(self):   # te da los datos con los que se rellenó
+        data = {"id": self.id}
+        #character
+        if self.character:
+            data["type"] = "character"
+            data["name"] = self.character.name
+
+        #planet
+        elif self.planet:
+            data["type"] = "planet"
+            data["name"] = self.planet.name
+       
+      
+     
+        return data
+    
+
 
 
 #Modelo de la tabla de personajes
