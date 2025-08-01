@@ -52,6 +52,42 @@ def get_all_users():
     users = User.query.all()            #query = consulta
     return jsonify([user.serialize() for user in users]), 200
 
+#POST USER
+@app.route('/user', methods=['POST'])
+def create_user():
+
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                "Error": "No se enviaron los datos"
+            }), 400
+
+        required_filds = ["name", "password"]
+        missing_filds = [filds for filds in required_filds if filds not in data]
+
+        if missing_filds:
+            return jsonify({
+                "Error": "Faltan campos obligatorios", 
+                "Missing_filds": missing_filds
+            }), 400
+        
+        new_user = User(
+            email = data.get("email"), 
+            password = data.get("password")
+        )
+        db.session.add(new_user)  # asi se prepara para agregarlo en la tabla (como un git add)
+        db.session.commit()    # así se guarda en la tabla
+
+        return jsonify(new_user.serialize()), 201
+    
+    except Exception as e:
+        return jsonify({
+            "Error": f"Problema en el servidor {e}"
+        }), 500
+
+
+
 # GET PEOPLE_ID
 @app.route('/people/<int:people_id>', methods=['GET'])
 def get_one_character(people_id):   
@@ -166,6 +202,7 @@ def delete_planet_favorite(user_id, planet_id):
 @app.route('/favorite/people/<int:user_id>/<int:people_id>', methods=['DELETE'])
 def delete_character_favorite(user_id, people_id):
     existe = FavoritesList.query.filter_by(user_id=user_id, character_id=people_id).first()
+    # creo una variable que haga una consulta en la clase y filter por () y devuelve la primera coincidencia que encuentre.
     if not existe:
         return jsonify({"message": "Favorito de planeta no encontrado"}), 404
 

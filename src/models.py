@@ -1,8 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
+
 
 db = SQLAlchemy()
 
@@ -13,13 +14,14 @@ class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)               # primary_key Marca esta columna como clave primaria
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)         # unique significa que no puede ser repetido
     password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False) 
-    registration_date: Mapped[datetime] = mapped_column(nullable=False)    # registration_date se genera solo   /    pongo datetime en vez de int y lo importo
-    name: Mapped[str] = mapped_column(db.String(120), nullable=False)
-    last_name: Mapped[str] = mapped_column(db.String(120), nullable=False)
-
+    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=True)  
+    registration_date: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))    # default=datetime.timezone.utc retorna fecha y hora actual
+    name: Mapped[str] = mapped_column(db.String(120), nullable=True)
+    last_name: Mapped[str] = mapped_column(db.String(120), nullable=True)
 
     favorites: Mapped[list["FavoritesList"]] = relationship("FavoritesList", back_populates="user", lazy="select")   #lazy: se utiliza para cargar los datos #Agrego la relación para que funcione en ambos sentidos
+                                                                                                                     #select : consultas separadas / joined: traer datos en la misma consulta
+                                                                                                    
 
     def serialize(self):   # te da los datos con los que se rellenó
         return {
@@ -58,8 +60,6 @@ class FavoritesList(db.Model):
             data["type"] = "planet"
             data["name"] = self.planet.name
        
-      
-     
         return data
     
 
